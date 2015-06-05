@@ -8,9 +8,9 @@
     <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
 
-    <script src="../lib/require.js"></script>
+    <script src="lib/require.js"></script>
 
-    <script src="../js/common.js"></script>
+    <script src="js/common.js"></script>
 </head>
 <body>
 <div id="content"></div>
@@ -23,13 +23,17 @@
 
         render: function () {
             debugger;
-            var categoryNodes = this.props.data.map(function (category) {
-                return (
-                        <Category categoryId={category.id}>
+            var categoryNodes = [];
+            if( this.props.data) {
+                categoryNodes = this.props.data.map(function (category) {
+                    return (
+                            <Category categoryId={category.id}>
                         {category.name}
-                        </Category>
-                );
-            });
+                            </Category>
+                    );
+                });
+            }
+
             return (
                     <div className="categorytList">
                         {categoryNodes}
@@ -78,19 +82,23 @@
             });
         },
         loadCommentsFromServer: function() {
+            debugger;
             $.ajax({
                 url: this.props.url,
-                dataType: 'json',
+                dataType: 'xml',
                 cache: false,
                 success: function(data) {
+                    debugger;
                     this.setState({data: data});
                 }.bind(this),
                 error: function(xhr, status, err) {
+                    debugger;
                     console.error(this.props.url, status, err.toString());
                 }.bind(this)
             });
         },
         componentDidMount: function() {
+            debugger;
             this.loadCommentsFromServer();
             setInterval(this.loadCommentsFromServer, this.props.pollInterval);
         },
@@ -106,7 +114,7 @@
     // http://xmlfeeds.coral.co.uk/oxi/pub
 
     React.render(
-            <CategoryBox url="http://xmlfeeds.coral.co.uk/oxi/pub" pollInterval={20000} />,
+            <CategoryBox url="feeds.xml" pollInterval={20000} />,
             document.getElementById('content')
     );
 

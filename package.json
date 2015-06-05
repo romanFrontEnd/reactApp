@@ -13,6 +13,8 @@
     "test": "./node_modules/.bin/mocha-phantomjs -R dot index.mocha.html"
   },
   "dependencies": {
-    "react": "~0.13.3"
+    "react": "~0.13.3",
+    "body-parser": "^1.4.3",
+    "express": "^4.4.5"
   }
 }

@@ -15,6 +15,7 @@ var path = require('path');
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
+var http = require('http');
 
 app.set('port', (process.env.PORT || 3000));
 
@@ -22,24 +23,63 @@ app.use('/', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.get('/comments.json', function(req, res) {
-    fs.readFile('comments.json', function(err, data) {
-        res.setHeader('Content-Type', 'application/json');
+app.get('/feeds.xml', function(req, res) {
+    var data  = getFeedData()
+    /*fs.readFile('feeds.xml', function(err, data) {
+        res.setHeader('Content-Type', 'application/xml');
         res.send(data);
-    });
+    });*/
 });
 
-app.post('/comments.json', function(req, res) {
-    fs.readFile('comments.json', function(err, data) {
-        var comments = JSON.parse(data);
-        comments.push(req.body);
-        fs.writeFile('comments.json', JSON.stringify(comments, null, 4), function(err) {
+app.post('/feeds.xml', function(req, res) {
+    fs.readFile('feeds.xml', function(err, data) {
+        var categories = JSON.parse(data);
+        categories.push(req.body);
+        fs.writeFile('feed.xml', JSON.stringify(categories, null, 4), function(err) {
             res.setHeader('Content-Type', 'application/json');
             res.setHeader('Cache-Control', 'no-cache');
-            res.send(JSON.stringify(comments));
+            res.send(JSON.stringify(categories));
         });
     });
 });
+
+
+
+function getFeedData() {
+
+    http.get({
+        host: 'http://xmlfeeds-tst2.coral.co.uk/oxi/pub',
+        path: ''
+    }, function(res) {
+        console.error('UData recekved', res.body);
+
+        // explicitly treat incoming data as utf8 (avoids issues with multi-byte chars)
+        res.setEncoding('utf8');
+debugger;
+        // incrementally capture the incoming response body
+        var body = '';
+        res.on('data', function(d) {
+            body += d;
+        });
+
+        // do whatever we want with the response once it's done
+        res.on('end', function() {
+            try {
+                var parsed = JSON.parse(body);
+            } catch (err) {
+                console.error('Unable to parse response as JSON', err);
+                return cb(err);
+            }
+
+
+        });
+    }).on('error', function(err) {
+        // handle errors with the request itself
+        console.error('Error with the request:', err.message);
+        cb(err);
+    });
+
+}
 
 
 app.listen(app.get('port'), function() {
