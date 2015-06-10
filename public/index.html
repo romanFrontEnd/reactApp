@@ -22,13 +22,13 @@
     var CategoryList = React.createClass({
 
         render: function () {
-            debugger;
             var categoryNodes = [];
-            if( this.props.data) {
+            if($.isArray(this.props.data)) {
                 categoryNodes = this.props.data.map(function (category) {
+                    var cat = category.$;
                     return (
-                            <Category categoryId={category.id}>
-                        {category.name}
+                            <Category categoryId={cat["id"]}>
+                        {cat.name}
                             </Category>
                     );
                 });
@@ -45,6 +45,7 @@
 
     var Category = React.createClass({
         render: function () {
+
             var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
             return (
 
@@ -64,49 +65,29 @@
         getInitialState: function() {
             return {data: []};
         },
-        handleCommentSubmit: function(comment) {
-            var comments = this.state.data;
-            var newComments = comments.concat([comment]);
-            this.setState({data: newComments});
+        loadCategoriesFromServer: function() {
             $.ajax({
                 url: this.props.url,
-                dataType: 'json',
+                dataType: 'JSON',
                 type: 'POST',
-                data: comment,
-                success: function(data) {
-                    this.setState({data: data});
-                }.bind(this),
-                error: function(xhr, status, err) {
-                    console.error(this.props.url, status, err.toString());
-                }.bind(this)
-            });
-        },
-        loadCommentsFromServer: function() {
-            debugger;
-            $.ajax({
-                url: this.props.url,
-                dataType: 'xml',
                 cache: false,
                 success: function(data) {
-                    debugger;
-                    this.setState({data: data});
+                    this.setState({data: data.class});
                 }.bind(this),
                 error: function(xhr, status, err) {
-                    debugger;
                     console.error(this.props.url, status, err.toString());
                 }.bind(this)
             });
         },
         componentDidMount: function() {
-            debugger;
-            this.loadCommentsFromServer();
-            setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+            this.loadCategoriesFromServer();
+            setInterval(this.loadCategoriesFromServer, this.props.pollInterval);
         },
         render: function () {
             return (
                     <div className="categoryBox">
                         <h1>Sport categories:</h1>
-                        <CategoryList data="{this.state.data}"/>
+                        <CategoryList data={this.state.data}/>
                     </div>
             );
         }
@@ -118,7 +99,7 @@
             document.getElementById('content')
     );
 
-    var commentList = React.createClass({
+   /* var commentList = React.createClass({
 
         render: function () {
             debugger;
@@ -256,7 +237,7 @@
         {author: "Pete Hunt", text: "This is one commen 11t"},
         {author: "Jordan Walke", text: "This is *another* comment"}
     ];
-
+*/
 </script>
 </body>
 </html>

@@ -16,6 +16,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var http = require('http');
+var parseString = require('xml2js').parseString;
 
 app.set('port', (process.env.PORT || 3000));
 
@@ -24,6 +25,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/feeds.xml', function(req, res) {
+
+    debugger;
+    console.log("debug is running");
     var data  = getFeedData()
     /*fs.readFile('feeds.xml', function(err, data) {
         res.setHeader('Content-Type', 'application/xml');
@@ -33,12 +37,15 @@ app.get('/feeds.xml', function(req, res) {
 
 app.post('/feeds.xml', function(req, res) {
     fs.readFile('feeds.xml', function(err, data) {
-        var categories = JSON.parse(data);
-        categories.push(req.body);
-        fs.writeFile('feed.xml', JSON.stringify(categories, null, 4), function(err) {
-            res.setHeader('Content-Type', 'application/json');
-            res.setHeader('Cache-Control', 'no-cache');
-            res.send(JSON.stringify(categories));
+        parseString(data, function (err, result) {
+            var fullJson = JSON.parse(JSON.stringify(result));
+
+            var categories = JSON.stringify(fullJson["oxip"]["response"][0]);
+            fs.writeFile('feed.json', categories , function(err) {
+                res.setHeader('Content-Type', 'application/json');
+                res.setHeader('Cache-Control', 'no-cache');
+                res.send(categories);
+            });
         });
     });
 });
